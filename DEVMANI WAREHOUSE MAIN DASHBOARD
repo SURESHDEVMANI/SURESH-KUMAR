@@ -1,0 +1,339 @@
+function doGet(e) {
+// 🏠 Dashboard HTML
+  return HtmlService.createHtmlOutputFromFile('Index')
+    .setTitle('DEVMANI WAREHOUSE Dashboard')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+
+
+AND HTML
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Devmani Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:Poppins,sans-serif;
+  background:#eef1f8;
+  display:flex;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar{
+  width:230px;
+  background:linear-gradient(180deg,#4a148c,#6a1b9a);
+  color:#fff;
+  padding:16px;
+  overflow-y:auto;
+  transition:width .3s ease, padding .3s ease; /* ✅ added */
+}
+
+/* ✅ SIDEBAR HIDE CLASS (ADDED) */
+.sidebar.hidden{
+  width:0;
+  padding:0;
+  overflow:hidden;
+}
+
+.title{
+  font-size:20px;
+  font-weight:600;
+  margin-bottom:16px;
+  text-align:center;
+}
+
+.card{
+  background:rgba(255,255,255,0.12);
+  padding:12px;
+  border-radius:14px;
+  margin-bottom:12px;
+  cursor:pointer;
+  transition:.25s;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+
+.card:hover{
+  transform:translateX(6px);
+  background:rgba(255,255,255,0.25);
+}
+
+.card.active{
+  background:rgba(255,255,255,0.35);
+  border:1px solid #fff;
+  transform:translateX(6px);
+}
+
+.icon{font-size:22px}
+
+/* GROUP + SUB MENU */
+.group-card{
+  background:rgba(255,255,255,0.18);
+  padding:12px;
+  border-radius:14px;
+  margin-bottom:10px;
+  cursor:pointer;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid rgba(255,255,255,0.2);
+}
+
+.group-card:hover{
+  background:rgba(255,255,255,0.3);
+}
+
+.sub-cards{
+  display:none;
+  margin-left:14px;
+  margin-bottom:10px;
+}
+
+.sub-card{
+  background:linear-gradient(135deg,#ffffff33,#ffffff10);
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:8px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition:.25s;
+  border-left:4px solid #ffcc80;
+  color:#fff;
+}
+
+.sub-card:hover{
+  background:linear-gradient(135deg,#ffcc80,#ffb300);
+  color:#4a148c;
+  transform:translateX(6px);
+}
+
+/* ================= MAIN ================= */
+.main{
+  flex:1;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+.topbar{
+  padding:14px 20px;
+  font-size:18px;
+  font-weight:600;
+  background:#fafafa;
+  border-bottom:1px solid #ddd;
+  display:flex;              /* ✅ added */
+  align-items:center;        /* ✅ added */
+}
+
+/* ✅ TOGGLE BUTTON (ADDED) */
+.toggle-btn{
+  font-size:22px;
+  cursor:pointer;
+  margin-right:12px;
+}
+
+iframe{
+  width:100%;
+  height:100%;
+  border:none;
+  opacity:0;
+  transition:opacity .4s;
+}
+
+/* LOADER */
+.loader{
+  display:none;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  border:6px solid #eee;
+  border-top:6px solid #6a1b9a;
+  border-radius:50%;
+  width:38px;
+  height:38px;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  100%{transform:translate(-50%,-50%) rotate(360deg)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="title">📊 DEVMANI WAREHOUSE</div>
+
+  <input type="text" id="menuSearch" placeholder="🔍 Search menu..."
+  onkeyup="filterMenu()"
+  style="
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:none;
+    outline:none;
+    margin-bottom:14px;
+    font-family:Poppins;
+  ">
+
+
+  <!-- 🔹 HOME (ALWAYS SINGLE) -->
+  <div class="card" id="homeCard"
+ onclick="loadPage(this,
+ 'https://script.google.com/macros/s/AKfycbwjti4W3PVA0WWLfa8_GT8LpMTn6oOS4_Eb-mJpx-ZO4P3f5I2_Qt_g9-nh_qyA4i0A7Q/exec',
+ 'HOME')">
+  <div class="icon">🏢</div><div>HOME</div>
+</div>
+
+
+  <!-- 🔹 BILLING -->
+  <div class="group-card" onclick="toggleSub(this)">🧾 BILLING</div>
+  <div class="sub-cards">
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbxJ39dNiGvQ2vFfhU50urhPD6_05vGuRA6yxjDM7IhPfReC826Q-er0uaZRKV-hRIgO/exec','ORDER RECEIVE')">🖥️ ORDER RECEIVE</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbzpRTXl9mq9ql-LCKJtQt8pO9zvAU6stAkanIqPUQ49HTO4Fkb3PgldabXdvww-CT4/exec','PICKLIST PRINT')">🖨️ PICKLIST PRINT</div>
+  </div>
+
+  <!-- 🔹 DISPATCH -->
+  <div class="group-card" onclick="toggleSub(this)">🚚 DISPATCH</div>
+  <div class="sub-cards">
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbyADC_GqPd322ltK1o9clDMahjajfQ4Q_BlLdxdPBQjiX7zhPfFiXC-LRDol7J_fK0/exec','DISPATCH ENTRY')">🖊️ DISPATCH ENTRY</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbyhYAiWEygE92NsoR1U6oOIA7W_5ob8n7xOAsxOEOanGd7PsXoQToWW9YDtMLm9_U0o/exec','DISPATCH SLIP')">🧾 DISPATCH SLIP</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbyMnNOI3HbQPmi_YDvDWnCrO0MpLj3QI5raC4bUZLtZX5NhIo0szj4UGs0rhqFkMvWobw/exec','CHECK ENTRY')">📝✅ CHECK ENTRY</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbwujGY9edwr8_HSMPB_r66TdvbbiG9cy6L_JMwsCUDGyV5BWuS-rdDlvqxtJD5pPbGW/exec','INVOICE TRACKER')">📈 INVOICE TRACKER</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/a/macros/devmani.net/s/AKfycbw1uBzfHMaqgqKq7whwe9D5-ccL2fdkluoN8bSEOLS3JpKv4djbjSTDgtQ0FzkKUdpwPw/exec','RECEIVING PENDING')">⏳ RECEIVING PENDING</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbxsNjb_DHhBVj01suhIFU2LY-ZOybVl207f7WW-Z31QHEQhUfrDq6Dd5AE4gBvn99FR/exec','INVOICE RECEIVING UPLOAD')">⬆️ INVOICE RECEIVING UPLOAD</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbyOU4SSJTWSsqeNX5MhiFKWfxxnIQFsu_d-7QH22CXxJgKC18Rq_wzWLkoTPD391LMy/exec','Transport GR Entry')">🚚✍️ Transport GR Entry</div>
+  </div>
+
+  <!-- 🔹 CLAIM -->
+  <div class="group-card" onclick="toggleSub(this)">⚠️ CLAIM</div>
+  <div class="sub-cards">
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbx5qdR3ueUQtMZMt-6N4lWP_3r9ewLRlFkRmtZPpjV2FMr-rR9e_XE-Cf05wXi-6ZOz5w/exec','ACK TRACKING')">📡 ACK TRACKING</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbxQ_cva4JBWJwEcVkcJnOgy7tDbylQBEOFgVQ3m8_yF9SmGBuf6fc0WEVXWRcTDEMXVrw/exec','CLAIM ENTRY')">🖥️ CLAIM ENTRY</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbziFwz_bpu-LVl-xOEBZ6lMD3g40z7CfFjmNVTrF_pfGLDDeFYYBzTNvxjIcRaaaijs3w/exec','CLAIM SHEET')">📑 CLAIM SHEET</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/macros/s/AKfycbw_4UqrL6O8UwUXvosVACQc2j2ETjEjoC1yy4TcpIUI9_VoH1QtoVtxnys2O56O6cBR/exec','CLAIM RECEIVING UPLOAD')">⬆️ CLAIM RECEIVING UPLOAD</div>
+    <div class="sub-card" onclick="loadPage(this,'https://script.google.com/a/macros/devmani.net/s/AKfycbww1Elx6aZBECz2zN1Ls75Ijf_9tkdJGbe2Rm3vhrtQJdDXx8xUio2Y2oYsmbzh4W-7RQ/exec','CLAIM RECEIVING PENDING')">⌛ CLAIM RECEIVING PENDING</div>
+  </div>
+  <div class="card" onclick="loadPage(this,
+    'https://docs.google.com/forms/d/e/1FAIpQLSfjmyUlutx6bZ6iRa07eXoL1LUv-Wa1WBHEFP7kBdN6vMGF6A/viewform',
+    'Leave application form')">
+    <div class="icon">📋</div>
+    <div>Leave application form</div>
+  </div>
+   <div class="card" onclick="window.open(
+  'https://docs.google.com/forms/d/e/1FAIpQLSfpG_-IvVMrHngBEYbQqAWPDU9P7Awhqyfvv99AspOZarvtGw/viewform',
+  '_blank'
+)">
+  <div class="icon">📝</div>
+  <div>Expenses Form</div>
+</div>
+
+
+  <div class="card" onclick="loadPage(this,
+    'https://docs.google.com/forms/d/e/1FAIpQLScdzaXSc67eZSB4ZU6TyNSKAEoEpo_SP8CxfKqB_b9lPtSrWA/viewform',
+    'Personal veh expenses')">
+    <div class="icon">📋</div>
+    <div>Personal veh expenses</div>
+  </div>
+</div>
+
+
+<div class="main">
+  <div class="topbar">
+    <!-- ✅ TOGGLE BUTTON ADDED -->
+    <span class="toggle-btn" onclick="toggleSidebar()">☰</span>
+    <span id="titleBar">✨ DEVMANI TEAM जीत भी - जोश भी ✨</span>
+  </div>
+
+  <div class="loader" id="loader"></div>
+  <iframe id="webFrame" allow="camera; microphone; clipboard-write; fullscreen"></iframe>
+</div>
+
+<script>
+/* ✅ SIDEBAR TOGGLE LOGIC (ONLY ADDITION) */
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('hidden');
+}
+
+/* 🔹 AAPKA EXISTING JS BILKUL SAME */
+function loadPage(card,url,title){
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+  card.classList.add('active');
+
+  document.getElementById('titleBar').innerText=title;
+
+  const frame=document.getElementById('webFrame');
+  const loader=document.getElementById('loader');
+
+  loader.style.display='block';
+  frame.style.opacity='0';
+  frame.src=url;
+
+  frame.onload=()=>{
+    loader.style.display='none';
+    frame.style.opacity='1';
+  }
+}
+
+function toggleSub(el){
+  const sub = el.nextElementSibling;
+  document.querySelectorAll('.sub-cards').forEach(s=>{
+    if(s !== sub) s.style.display='none';
+  });
+  sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
+}
+
+function filterMenu(){
+  const search = document.getElementById('menuSearch').value.toLowerCase();
+  const groups = document.querySelectorAll('.group-card');
+  const subGroups = document.querySelectorAll('.sub-cards');
+
+  if(search === ''){
+    groups.forEach(g=>g.style.display='flex');
+    subGroups.forEach(sg=>sg.querySelectorAll('.sub-card')
+      .forEach(sc=>sc.style.display='flex')
+    );
+    return;
+  }
+
+  groups.forEach((group,i)=>{
+    let found=false;
+    const sub=subGroups[i];
+    sub.querySelectorAll('.sub-card').forEach(card=>{
+      if(card.innerText.toLowerCase().includes(search)){
+        card.style.display='flex';
+        found=true;
+      }else{
+        card.style.display='none';
+      }
+    });
+    group.style.display = found ? 'flex' : 'none';
+    sub.style.display = found ? 'block' : 'none';
+  });
+}
+
+window.onload=()=>{
+  const home=document.getElementById('homeCard');
+  if(home) home.click();
+};
+</script>
+
+</body>
+</html>
